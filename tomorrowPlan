@@ -1,0 +1,10 @@
+1) Ping profs for help.
+2) Write a STRIPS description for the world and the problem; try to follow the example here: http://csci431.artifice.cc/notes/pddl.html
+3) Move in the STRIPS thing into a sub-dir; see if it knows how to eat.
+4) Once it works and you can connect it to a SimAgent (making a STRIPS agent), see how we can start archiving solutions and sub-solutions.
+5) I really think that the real great starting point will be "evaluate value of subplan" and then "match subplan." 
+That way, we can create a directory of common sub-plans. 
+AT THIS STAGE (end of week), I will definitely sit down, add torch, and start recording these examples + recording state traces.
+
+
+
