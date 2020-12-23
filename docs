@@ -1,0 +1,4 @@
+1) Make it work with too many pointers in strips directory
+2) Make it work in pddl.
+3) Get new STRIPS / PDDL implementation (preferably Lisp)
+

@@ -1,0 +1,18 @@
+Steps by Jan. 15th:
+
+1) Make it work with STRIPS; translate between strips and normal actions.
+2) Find good ways to translate back, and record full states (and their sequences).
+3) Find a way to "abstract an acion away" and later use it for planning.
+4) STRETCH: write down the recursive plan, and find a way to use it for planning.
+	-- From there, abstract the details away.
+
+~~~~~~~~~~~~~~~~~
+
+It's clear that I can slowly move in the direction of "an agent that plays with plans," but
+I don't remotely have the full picture in mind yet.
+
+Therefore, this must go in tandem with learning DRL, then the Grokking stage, the o2p2 reimplementation.
+
+Best I can show the profs is the recursive plan, and maybe dicts with preferences on what to match.
+
+
