@@ -1,0 +1,34 @@
+1) the STRIPS thing is a little incompetent, esp. for any plan where you have to take a step backward from your current plan.
+2) Planners online exist, but it's not a very accessible domain; the caricature pyddl thing you have is best for now.
+
+What to do with pyddl:
+
+1) make it work with at least the basic apple version (try tomorrow)
+2) make a parser that will allow you to use actuall pddl files. The stuff at logicmoo_ec/test/domains_ocl/ is a great start (see toasterworld).
+3) try to start making smart / learning heuristics
+4) try to redo as "a thing that has learned to plan"
+
+Most of the first several steps are high-key busy work. For now, focus on the other thing, except maybe translating the apple-stuff so it works here, too.
+
+
+~~~~~~~~~~~~~~~~~~~
+
+Guide to the apples: before v4 / v5, the problem is incomplete, but it works.
+
+v5 is the full problem description, but the simple planner (strips dir) fails
+
+v7 works, by giving a 'hint' that can be satisfied without backward steps.
+
+Honestly, this is already enough to try and learn something, but I want the better, more complete pddl thing to work before I do anything.
+I will break it apart, and make the "grounding" and "trying" actions for the agent; THEN I will add simulation as well. This will take forever.
+
+
+~~~~~~~~~~~~~~~~~~~
+
+Better pddl plan: no parser or old files, just write everything in this one, then learn to save / learn from the computation trace and 
+learn a heuristic. Especially one on "does the grounding make sense," as in, "can I imagine it." We'll see.
+
+First step is really translating plans into actions and actions into plans.
+
+THEN, move on to the "abstract" function. If you're lucky, you'll be able to manually add plans / compex predicates by Jan 15th.
+ 
