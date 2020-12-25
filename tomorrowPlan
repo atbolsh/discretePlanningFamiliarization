@@ -4,7 +4,5 @@
 4) Once it works and you can connect it to a SimAgent (making a STRIPS agent), see how we can start archiving solutions and sub-solutions.
 5) I really think that the real great starting point will be "evaluate value of subplan" and then "match subplan." 
 That way, we can create a directory of common sub-plans. 
-AT THIS STAGE (end of week), I will definitely sit down, add torch, and start recording these examples + recording state traces.
-
 
 

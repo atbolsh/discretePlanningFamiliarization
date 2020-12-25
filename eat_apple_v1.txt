@@ -1,0 +1,17 @@
+Initial state: Edible(apple), Emptyhanded(self), At(b, self), At(a, apple)
+Goal state:     Full(self)
+
+Actions:
+        Eat(X)
+        Preconditions: Edible(X), Holding(X)
+        Postconditions: Full(self), !Holding(X), Emptyhanded(self)
+
+        Pickup(X, Place)
+        Preconditions: At(Place, X), At(Place, self), Emptyhanded(self)
+        Postconditions: Holding(X), !Emptyhanded(self), !At(Y, X)
+
+        Go(X, Y)
+        Preconditions: At(X, self), !At(Y, self)
+        Postconditions: !At(X, self), At(Y, self)
+
+
