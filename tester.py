@@ -1,10 +1,10 @@
-from world import *
-from agent import *
+from .world import *
+from .agent import *
 
 
 w = World()
 
-q = SimAgent('bobby', w.B)
+q = SimAgent('bobby', w, w.B)
 
 a = Element('apple', 'edible')
 b = Element('buldozer')

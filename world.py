@@ -1,5 +1,6 @@
 import numpy as np
-from agent import *
+from copy import deepcopy
+from .agent import *
 
 # Elements can only be picked up at a location one at a time.
 # Hopefully, I'll be able to make a framework that understands how to manipulate objects between 5 stacks.
@@ -11,6 +12,9 @@ class Element:
     
     def __str__(self):
         return self.t + ':' + self.name
+    
+    def state(self):
+        return deepcopy(self.__dict__)
 
 
 class Stack:
@@ -31,6 +35,9 @@ class Stack:
     
     def __str__(self):
         return ' :: '.join([str(x) for x in self.container[::-1]])
+    
+    def state(self):
+        return [x.state() for x in self.container]
 
 
 class Location:
@@ -41,6 +48,9 @@ class Location:
 
     def __str__(self):
         return self.name + ': Agents ' + ', '.join([str(x) for x in self.agents]) + '; Stack ' + str(self.objs)
+    
+    def state(self):
+        return {'agents': [str(x) for x in self.agents], 'stack': self.objs.state()}
     
     def place(self, x):
         self.objs.add(x)
@@ -66,4 +76,8 @@ class World:
     def __str__(self):
         return 'World:\n\n' + '\n'.join([str(self.__dict__[place]) for place in self.places])
 
-
+    def state(self): # Basically, 'state' is just like 'str,' but for machines.
+        state = {}
+        for place in self.places:
+            state[place] = self.__dict__[place].state()
+        return state

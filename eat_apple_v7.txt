@@ -22,3 +22,6 @@ Actions:
         Preconditions: At(Place, self), Empty(Place), Holding(X)
         Postconditions: Emptyhanded(self), At(Place, X), Top(Place, X), On(Place, X), !Empty(Place)
 
+        PlaceStack(X, Place, Z)
+        Preconditions: At(Place, self), At(Place, Z), Holding(X), Top(Place, Z)
+        Postconditions: Emptyhanded(self), At(Place, X), Top(Place, X), !Top(Place, Z), On(Z, X)

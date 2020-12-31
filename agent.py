@@ -1,16 +1,52 @@
 import numpy as np
 
 class SimAgent: # The sock-puppet used by both human characters and by the automatic agents, later.
-    def __init__(self, name, location):
+    def __init__(self, name, world, location):
         self.name = name
+        self.world = world
         location.enter(self) # Debug to make sure this works.
         self.holding = None
         self.reward = 0 # Accumulates over time; we'll ignore the other stuff for now.
         self.deltaR = 0
         self.lastAction = ''
+        # see eat_apple_v7.txt
+        self.stripsActions = {\
+            'Go': self.goTo,
+            'PickupEmpty': self.pickup,
+            'PickupStack': self.pickup,
+            'PlaceEmpty': self.place,
+            'PlaceStack': self.place,
+            'Eat': self.eat
+        }
+        # Don't need to include all of them, just the ones that matter to low-level actions.
+        self.stripsLiterals = {\
+            'a': self.world.A,
+            'b': self.world.B,
+            'c': self.world.C,
+            'd': self.world.D,
+            'e': self.world.E
+        }
+        #Simple for now, but can be written longer. Consume list of literals, spit out dict of relevant args.
+        self.literalPostProcessors = {\
+            'Go': lambda literals: {'location': self.stripsLiterals[literals[1]]}, # Only need destination
+            'PickupEmpty': lambda literals: {},
+            'PickupStack': lambda literals: {},
+            'PlaceEmpty': lambda literals: {},
+            'PlaceStack': lambda literals: {},
+            'Eat': lambda literals: {}
+        }
     
     def __str__(self):
         return self.name
+
+    def executeGroundedAction(self, ga):
+        name = ga.action.name
+        args = self.literalPostProcessors[name](ga.literals)
+        return self.stripsActions[name](**args)
+
+    def executePlan(self, plan):
+        for groundedAction in plan:
+            self.executeGroundedAction(groundedAction)
     
     def pickup(self):
         if type(self.holding) == type(None):
@@ -46,10 +82,20 @@ class SimAgent: # The sock-puppet used by both human characters and by the autom
         # NOT recorded as an action. Just a manipulator. Should be associated with the previous action.
     
     def state(self):
-        return (self.location.name, str(self.holding), self.lastAction, self.deltaR)
+        return { \
+                    'name': self.name, \
+                    'location': self.location.name, \
+                    'holding': str(self.holding), \
+                    'lastAction': self.lastAction, \
+                    'deltaR': self.deltaR \
+               }
     # This can output the state, but not FULL state (no info on location info, for instance).
     # All more sophisticated info gathering / learning will come later.
-    # For now, I will code up a straightforward STRIPS planner for this system.
-    # THEN, I will try to do "STRIPS IN STRIPS" where the fundamental actions are sentence manipulations.
-    # THEN, I will add "simulation." Should all work out.
+
+    def full_state(self):
+        s = self.state()
+        s['world'] = self.world.state()
+        return s
+
+
 
