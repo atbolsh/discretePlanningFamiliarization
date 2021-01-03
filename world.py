@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from .agent import *
+from agent import *
 
 # Elements can only be picked up at a location one at a time.
 # Hopefully, I'll be able to make a framework that understands how to manipulate objects between 5 stacks.

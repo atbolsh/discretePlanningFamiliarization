@@ -1,0 +1,27 @@
+Initial state: Edible(apple), Emptyhanded(self), At(b, self), At(a, apple), At(a, buldozer), Top(a, buldozer), On(a, apple), On(apple, buldozer), Empty(b), Empty(c), Empty(d), Empty(e)
+
+Actions:
+        Eat(X)
+        Preconditions: Edible(X), Holding(X)
+        Postconditions: Full(self), !Holding(X), Emptyhanded(self)
+
+        PickupEmpty(X, Place)
+        Preconditions: At(Place, X), At(Place, self), Emptyhanded(self), Top(Place, X), On(Place, X)
+        Postconditions: Holding(X), !Emptyhanded(self), Empty(Place), !At(Place, X), !On(Place, X), !Top(Place, X)
+
+        PickupStack(X, Place, Z)
+        Preconditions: At(Place, X), At(Place, self), Emptyhanded(self), Top(Place, X), On(Z, X), At(Place, Z)
+        Postconditions: Holding(X), !Emptyhanded(self), Top(Place, Z), !At(Place, X), !On(Z, X), !Top(Place, X)
+
+        Go(X, Y)
+        Preconditions: At(X, self), !At(Y, self)
+        Postconditions: !At(X, self), At(Y, self)
+
+        PlaceEmpty(X, Place)
+        Preconditions: At(Place, self), Empty(Place), Holding(X)
+        Postconditions: Emptyhanded(self), At(Place, X), Top(Place, X), On(Place, X), !Empty(Place)
+
+        PlaceStack(X, Place, Z)
+        Preconditions: At(Place, self), At(Place, Z), Holding(X), Top(Place, Z)
+        Postconditions: Emptyhanded(self), At(Place, X), Top(Place, X), !Top(Place, Z), On(Z, X)
+

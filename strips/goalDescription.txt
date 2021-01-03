@@ -1,0 +1,2 @@
+Goal state:    Top(e, buldozer), Full(self), !Empty(e), On(e, buldozer), At(e, buldozer)
+

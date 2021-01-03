@@ -97,5 +97,10 @@ class SimAgent: # The sock-puppet used by both human characters and by the autom
         s['world'] = self.world.state()
         return s
 
+# Shell for now; will include ability to read off predicates from world.
+class Agent(SimAgent):
+    def __init__(self, name, world, location):
+       super(Agent, self).__init__(name, world, location)
 
+ 
 

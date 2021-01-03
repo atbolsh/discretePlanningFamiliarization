@@ -42,38 +42,67 @@ def strong_match(ground1, ground2):
     """
     return ground1.truth == ground2.truth and weak_match(ground1, ground2)
 
+
 class World:
     def __init__(self):
         self.state = dict()
         self.goals = set()
         self.known_literals = set()
         self.actions = dict()
+
     def is_true(self, predicate, literals):
         if predicate not in self.state:
             return False
         return literals in self.state[predicate]
+
     def is_false(self, predicate, literals):
         return not self.is_true(predicate, literals)
+
     def set_true(self, predicate, literals):
         if predicate not in self.state:
             self.state[predicate] = set()
         self.state[predicate].add(literals)
+
     def set_false(self, predicate, literals):
         if predicate in self.state:
             self.state[predicate].remove(literals)
+
     def add_goal(self, predicate, literals, truth=True):
         g = GroundedCondition(predicate, literals, truth)
         self.goals.add(g)
+
     def add_literal(self, literal):
         self.known_literals.add(literal)
+
     def add_action(self, action):
         if action.name not in self.actions:
             self.actions[action.name] = action
+
     def goal_reached(self):
         for g in self.goals:
             if not g.reached(self):
                 return False
         return True
+
+    def checkPreconditions(self, gAct): 
+         """Check preconditions are satisfied."""
+         for condition in gAct.pre:
+             if self.is_true(condition.predicate, condition.literals) != condition.truth:
+                return False
+         return True
+           
+    def _step(self, gAct): 
+        """From grounded action to new state, if preconditions satisfied."""
+        if not self.checkPreconditions(gAct):
+            raise EnvironmentError("can't take this action; check preconditions")
+        for post in gAct.post: # Basically update_state, but the dict version.
+            if post.truth: # condition is true after action
+                self.set_true(post.predicate, post.literals)
+            else:
+                self.set_false(post.predicate, post.literals)
+
+    def step(self, actionName, literals):
+        self._step(self.actions[actionName].ground(literals))
 
 class Condition:
     def __init__(self, predicate, params, truth=True):
@@ -96,6 +125,7 @@ class Condition:
             name = "!" + name
         return "{0}({1})".format(name, join_list(self.params))
 
+
 class GroundedCondition:
     def __init__(self, predicate, literals, truth=True):
         self.predicate = predicate
@@ -111,26 +141,33 @@ class GroundedCondition:
             name = "!" + name
         return "{0}({1})".format(name, join_list(self.literals))
 
+
 class Action:
     def __init__(self, name, params, preconditions, postconditions):
         self.name = name
         self.params = params
         self.pre = preconditions
         self.post = postconditions
+
     def generate_groundings(self, world):
         self.grounds = []
         cur_literals = []
         self.groundings_helper(world.known_literals, cur_literals, self.grounds)
+
     def groundings_helper(self, all_literals, cur_literals, g):
-        if len(cur_literals) == len(self.params):
-            args_map = dict(zip(self.params, cur_literals))
-            grounded_pre = [p.ground(args_map) for p in self.pre]
-            grounded_post = [p.ground(args_map) for p in self.post]
-            g.append(GroundedAction(self, cur_literals, grounded_pre, grounded_post))
+        if len(cur_literals) == len(self.params): # Gotta be a better way for this. Faster. Think later.
+            g.append(self.ground(cur_literals))
             return
         for literal in all_literals:
             if literal not in cur_literals:
                 self.groundings_helper(all_literals, cur_literals + [ literal ], g)
+
+    def ground(self, literals):
+        args_map = dict(zip(self.params, literals))
+        grounded_pre = [p.ground(args_map) for p in self.pre]
+        grounded_post = [p.ground(args_map) for p in self.post]
+        return GroundedAction(self, literals, grounded_pre, grounded_post)
+
     def print_grounds(self):
         i = 0
         for g in self.grounds:
@@ -138,8 +175,10 @@ class Action:
             print(g)
             print("")
             i = i + 1
+
     def __str__(self):
         return "{0}({1})\nPre: {2}\nPost: {3}".format(self.name, join_list(self.params), join_list(self.pre), join_list(self.post))
+
 
 class GroundedAction:
     def __init__(self, action, literals, pre, post):
@@ -343,7 +382,7 @@ def create_world(filename):
     print(w)
     return w
 
-debug = False
+debug = True
 
 def linear_solver(world):
     state = []
@@ -357,7 +396,7 @@ def linear_solver(world):
     return linear_solver_helper(world, state, goals, [])
 
 def linear_solver_helper(world, state, goals, current_plan, depth = 0):
-    debug = True
+#    debug = True
     padding = "".join(["++" for x in range(0,len(current_plan))]) + " "
     plan = []
 #    print("\n")
