@@ -1,4 +1,6 @@
 import numpy as np
+from world import *
+from perceptor import *
 
 class SimAgent: # The sock-puppet used by both human characters and by the automatic agents, later.
     def __init__(self, name, world, location):
@@ -9,45 +11,10 @@ class SimAgent: # The sock-puppet used by both human characters and by the autom
         self.reward = 0 # Accumulates over time; we'll ignore the other stuff for now.
         self.deltaR = 0
         self.lastAction = ''
-        # see eat_apple_v7.txt
-        self.stripsActions = {\
-            'Go': self.goTo,
-            'PickupEmpty': self.pickup,
-            'PickupStack': self.pickup,
-            'PlaceEmpty': self.place,
-            'PlaceStack': self.place,
-            'Eat': self.eat
-        }
-        # Don't need to include all of them, just the ones that matter to low-level actions.
-        self.stripsLiterals = {\
-            'a': self.world.A,
-            'b': self.world.B,
-            'c': self.world.C,
-            'd': self.world.D,
-            'e': self.world.E
-        }
-        #Simple for now, but can be written longer. Consume list of literals, spit out dict of relevant args.
-        self.literalPostProcessors = {\
-            'Go': lambda literals: {'location': self.stripsLiterals[literals[1]]}, # Only need destination
-            'PickupEmpty': lambda literals: {},
-            'PickupStack': lambda literals: {},
-            'PlaceEmpty': lambda literals: {},
-            'PlaceStack': lambda literals: {},
-            'Eat': lambda literals: {}
-        }
-    
+   
     def __str__(self):
         return self.name
 
-    def executeGroundedAction(self, ga):
-        name = ga.action.name
-        args = self.literalPostProcessors[name](ga.literals)
-        return self.stripsActions[name](**args)
-
-    def executePlan(self, plan):
-        for groundedAction in plan:
-            self.executeGroundedAction(groundedAction)
-    
     def pickup(self):
         if type(self.holding) == type(None):
             self.holding = self.location.pickup()
@@ -100,7 +67,49 @@ class SimAgent: # The sock-puppet used by both human characters and by the autom
 # Shell for now; will include ability to read off predicates from world.
 class Agent(SimAgent):
     def __init__(self, name, world, location):
-       super(Agent, self).__init__(name, world, location)
+        super(Agent, self).__init__(name, world, location)
+        # see eat_apple_v7.txt
+        self.perceptor = Perceptor()
+        self.STRIPSimage = deepcopy(self.perceptor.sw)
+        self.stripsActions = {\
+            'Go': self.goTo,
+            'PickupEmpty': self.pickup,
+            'PickupStack': self.pickup,
+            'PlaceEmpty': self.place,
+            'PlaceStack': self.place,
+            'Eat': self.eat
+        }
+        # Don't need to include all of them, just the ones that matter to low-level actions. In the future, could be compiled from world using names.
+        self.stripsLiterals = {\
+            'A': self.world.A,
+            'B': self.world.B,
+            'C': self.world.C,
+            'D': self.world.D,
+            'E': self.world.E
+        }
+        #Simple for now, but can be written longer. Consume list of literals, spit out dict of relevant args.
+        self.literalPostProcessors = {\
+            'Go': lambda literals: {'location': self.stripsLiterals[literals[1]]}, # Only need destination
+            'PickupEmpty': lambda literals: {},
+            'PickupStack': lambda literals: {},
+            'PlaceEmpty': lambda literals: {},
+            'PlaceStack': lambda literals: {},
+            'Eat': lambda literals: {}
+        }
+    
+    def perceive(self):
+        self.perceptor.perceiveSelf(self)
+        self.STRIPSimage = deepcopy(self.perceptor.sw)
+        self.perceptor.reset() # The compiler shouldn't keep track of all that's been perceived; that's the agent's job.
+  
+    def executeGroundedAction(self, ga):
+        name = ga.action.name
+        args = self.literalPostProcessors[name](ga.literals)
+        return self.stripsActions[name](**args)
 
- 
+    def executePlan(self, plan):
+        for groundedAction in plan:
+            self.executeGroundedAction(groundedAction)
+    
+
 

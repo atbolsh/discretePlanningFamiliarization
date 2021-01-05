@@ -17,16 +17,26 @@ def weak_find(items, target):
             return item
     return None
 
-def weak_match(ground1, ground2):
+def get_constituent_parts(condition):
+    if type(condition) == Condition:
+        return condition.params
+    elif type(condition) == GroundedCondition:
+        return condition.literals
+    else:
+        raise Exception("not a condition")
+
+def weak_match(condition1, condition2):
     """
     Matches a grounded condition if it has the same name and literals
     but ignores the truth value
     """
-    if ground1.predicate != ground2.predicate:
+    if condition1.predicate != condition2.predicate:
         return False
-    if len(ground1.literals) != len(ground2.literals):
+    matching1 = get_constituent_parts(condition1)
+    matching2 = get_constituent_parts(condition2)
+    if len(matching1) != len(matching2):
         return False
-    for i, j in zip(ground1.literals, ground2.literals):
+    for i, j in zip(matching1, matching2):
         if i != j:
             return False
     return True
@@ -36,14 +46,14 @@ def strong_find(items, condition):
         if strong_match(item, condition):
             return item
 
-def strong_match(ground1, ground2):
+def strong_match(condition1, condition2):
     """
     Matches a grounded conditions if it is a weak match and is the same truth value
     """
-    return ground1.truth == ground2.truth and weak_match(ground1, ground2)
+    return condition1.truth == condition2.truth and weak_match(condition1, condition2)
 
 
-class World:
+class STRIPSWorld:
     def __init__(self):
         self.state = dict()
         self.goals = set()
@@ -104,20 +114,30 @@ class World:
     def step(self, actionName, literals):
         self._step(self.actions[actionName].ground(literals))
 
+
 class Condition:
     def __init__(self, predicate, params, truth=True):
         self.predicate = predicate
         self.params = params
         self.truth = truth
 
-    def ground(self, args_map):
+    def get_args(self, args_map):
         args = list()
         for p in self.params:
             if p in args_map:
                 args.append(args_map[p])
             else:
                 args.append(p)
-        return GroundedCondition(self.predicate, tuple(args), self.truth)
+        return args
+    
+    def ground(self, args_map):
+        return GroundedCondition(self.predicate, tuple(self.get_args(args_map)), self.truth)
+    
+    def change_basis(self, args_map):
+        return Condition(self.predicate, tuple(self.get_args(args_map)), self.truth)
+    
+    def fake_ground(self): # Pretend the params are literals. Sometimes useful.
+        return GroundedCondition(self.predicate, self.params, self.truth)
 
     def __str__(self):
         name = self.predicate
@@ -134,6 +154,9 @@ class GroundedCondition:
 
     def reached(self, world):
         return world.is_true(self.predicate, self.literals) == self.truth
+    
+    def unground(self): # Make literals into params. Useful to undo fake grounds.
+        return Condition(self.predicate, self.literals, self.truth)
 
     def __str__(self):
         name = self.predicate
@@ -156,17 +179,14 @@ class Action:
 
     def groundings_helper(self, all_literals, cur_literals, g):
         if len(cur_literals) == len(self.params): # Gotta be a better way for this. Faster. Think later.
-            g.append(self.ground(cur_literals))
+            g.append(GroundedAction(self, cur_literals))
             return
         for literal in all_literals:
             if literal not in cur_literals:
                 self.groundings_helper(all_literals, cur_literals + [ literal ], g)
 
     def ground(self, literals):
-        args_map = dict(zip(self.params, literals))
-        grounded_pre = [p.ground(args_map) for p in self.pre]
-        grounded_post = [p.ground(args_map) for p in self.post]
-        return GroundedAction(self, literals, grounded_pre, grounded_post)
+        return GroundedAction(self, literals)
 
     def print_grounds(self):
         i = 0
@@ -181,15 +201,18 @@ class Action:
 
 
 class GroundedAction:
-    def __init__(self, action, literals, pre, post):
+    def __init__(self, action, literals):
         self.action = action
         self.literals = literals
-        self.pre = pre
-        self.post = post
+
+        args_map = dict(zip(action.params, literals))
+        self.pre = [p.ground(args_map) for p in action.pre]
+        self.post = [p.ground(args_map) for p in action.post] 
+
         # If the precondition specifies some requirement that is not changed in the post condition,
         # then we add that together with the post conditions and call it the "complete" post conditions
-        self.complete_post = list(post)
-        for p in pre:
+        self.complete_post = list(self.post)
+        for p in self.pre:
             if not weak_contains(self.complete_post, p):
                 self.complete_post.append(p)
     def __str__(self):
@@ -207,7 +230,7 @@ class ParseState:
 
 
 def create_world(filename):
-    w = World()
+    w = STRIPSWorld()
     predicateRegex = re.compile('(!?[A-Z][a-zA-Z_]*) *\( *([a-zA-Z0-9_, ]+) *\)')
     initialStateRegex = re.compile('init(ial state)?:', re.IGNORECASE)
     goalStateRegex = re.compile('goal( state)?:', re.IGNORECASE)

@@ -1,12 +1,13 @@
 import numpy as np
 from copy import deepcopy
-from agent import *
+#from agent import *
+import numpy as np
 
 # Elements can only be picked up at a location one at a time.
 # Hopefully, I'll be able to make a framework that understands how to manipulate objects between 5 stacks.
 
 class Element:
-    def __init__(self, name, t = "inedible"):
+    def __init__(self, name, t = "default"):
         self.name = name
         self.t = t
     
@@ -14,7 +15,7 @@ class Element:
         return self.t + ':' + self.name
     
     def state(self):
-        return deepcopy(self.__dict__)
+        return deepcopy(self.__dict__)       
 
 
 class Stack:
