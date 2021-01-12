@@ -1,5 +1,3 @@
-# Comment this out, but these are really mind agents.
-
 # The idea is that these agents can imagine a lot of actions that the 
 # agent can't take directly (like using the 'place' method), and then
 # learn to simulate the before and after effects of different actions, 
